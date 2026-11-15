@@ -75,7 +75,7 @@ the true effect is fixed, so false-positive rates, coverage and power can be mea
 
 Reproducibility: with fixed library versions `make run` is byte-for-byte deterministic. The
 committed numbers were produced with numpy 1.26 and scipy 1.13 (versions recorded in
-`metrics.json`). numpy 2.x draws binomial variates from a different random stream, so a fresh
+`metrics.json` and pinned in [`requirements.lock`](requirements.lock)). numpy 2.x draws binomial variates from a different random stream, so a fresh
 install reproduces every conclusion but not the last Monte Carlo digits; a check under numpy
 2.5 / scipy 1.18 differed only within Monte Carlo error.
 
@@ -213,7 +213,9 @@ with CUPED about +2.109 (+9.8% relative).
 CUPED turns an inconclusive result into a significant one, without more users, and the
 estimate (+7.0%) is close to the true +8%. Note that the absolute CI excludes zero while the
 relative CI just touches it: the relative interval also carries the uncertainty of the
-control mean in its denominator, so the two can disagree near the boundary.
+control mean in its denominator, so the two can disagree near the boundary. The Bayesian line
+adds no information for a revenue metric: it is a flat-prior normal approximation, so P(B > A)
+is 1 - p/2 of the Welch test (97.8% = 1 - 0.0442/2).
 
 `examples/simulated_ab_test_srm.csv` has **no true effect**, but a simulated logging bug loses
 25% of treatment users who never ordered. A naive read shows +15.5% conversion (p < 0.0001);
@@ -229,6 +231,11 @@ make install          # pip install -e ".[dev]"
 make run              # simulation studies -> reports/metrics.json + figures, then the CLI demo
 make test             # 80 tests, ~3 s
 ```
+
+`make install` takes the newest compatible packages. To reproduce the committed `reports/`, use
+`make install-locked` instead: it installs the versions pinned in
+[`requirements.lock`](requirements.lock) (Python 3.12), with which `make run` regenerates every
+value in `reports/metrics.json` exactly (checked on macOS arm64).
 
 ```bash
 abkit analyze my_experiment.csv --group variant --metric converted
