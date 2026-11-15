@@ -98,10 +98,22 @@ def power_two_means(
     crit = stats.t.isf(a, df)
     power = 0.0
     if alternative in ("two-sided", "larger"):
-        power += stats.nct.sf(crit, df, nc)
+        power += _nct_sf(crit, df, nc)
     if alternative in ("two-sided", "smaller"):
-        power += stats.nct.cdf(-crit, df, nc)
+        power += _nct_sf(crit, df, -nc)  # P(T_nc < -crit) = P(T_{-nc} > crit) by symmetry
     return float(power)
+
+
+def _nct_sf(x: float, df: float, nc: float) -> float:
+    """Upper tail P(T > x) of the noncentral t distribution, guarded against NaN.
+
+    Lower tails are computed by reflection because ``scipy.stats.nct.cdf`` (and
+    ``scipy.special.nctdtr``) return NaN deep in the far tail for some (df, nc) in
+    scipy >= 1.18, while ``sf`` stays finite. If a NaN still appears, the normal
+    approximation is used; it only happens where the probability is negligible.
+    """
+    p = float(stats.nct.sf(x, df, nc))
+    return p if math.isfinite(p) else float(stats.norm.sf(x - nc))
 
 
 def _solve_n(power_fn, target: float, n_min: float) -> int:

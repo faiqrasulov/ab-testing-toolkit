@@ -14,10 +14,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import platform
 import time
 from pathlib import Path
 
 import numpy as np
+import scipy
 from scipy import stats
 
 from abkit.power import (
@@ -268,7 +270,10 @@ def _round(obj, digits: int = 6):
 def run_all(out: Path, scale: float = 1.0, figures: bool = True) -> dict:
     """Run the four studies, write ``metrics.json`` and the figures into ``out``."""
     out.mkdir(parents=True, exist_ok=True)
-    metrics: dict = {"scale": scale, "seeds": SEEDS}
+    # Exact Monte Carlo digits depend on numpy's samplers, so record the versions used.
+    environment = {"python": platform.python_version(), "numpy": np.__version__,
+                   "scipy": scipy.__version__}
+    metrics: dict = {"scale": scale, "seeds": SEEDS, "environment": environment}
     for name, fn in (
         ("peeking", study_peeking),
         ("cuped", study_cuped),

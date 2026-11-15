@@ -1,5 +1,6 @@
 import math
 
+import numpy as np
 import pytest
 from scipy import stats
 from statsmodels.stats.power import NormalIndPower, TTestIndPower
@@ -78,6 +79,17 @@ def test_mde_proportions_round_trip(alternative):
     assert (mde < 0) == (alternative == "smaller")
     power = power_two_proportions(0.10, 0.10 + mde, 14_751, alternative=alternative)
     assert power == pytest.approx(0.8, abs=1e-9)
+
+
+def test_t_power_stays_finite_in_the_far_tail():
+    # Regression: scipy 1.18 returns NaN for nct.cdf(-crit, 786, 11.07), which broke the
+    # root finders. The lower tail is now computed by reflection, nct.sf(crit, df, -nc).
+    for d in np.linspace(0.5, 3.0, 11):
+        assert 0.99 < power_two_means(d, 1.0, 394) <= 1.0 + 1e-12
+        assert 0.99 < power_two_means(-d, 1.0, 394, alternative="smaller") <= 1.0 + 1e-12
+    crit = stats.t.isf(0.025, 398)
+    reflected = power_two_means(0.2, 1.0, 200) - stats.nct.sf(crit, 398, 0.2 * np.sqrt(100))
+    assert reflected == pytest.approx(stats.nct.cdf(-crit, 398, 0.2 * np.sqrt(100)), rel=1e-6)
 
 
 def test_sample_size_is_smallest_sufficient_integer():

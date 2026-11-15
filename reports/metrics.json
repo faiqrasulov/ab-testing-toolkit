@@ -6,6 +6,11 @@
     "coverage": 303,
     "power": 404
   },
+  "environment": {
+    "python": "3.12.4",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1"
+  },
   "peeking": {
     "design": {
       "baseline": 0.1,

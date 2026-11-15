@@ -61,7 +61,7 @@ fit teams that can commit to a schedule of looks; they keep nearly all of the fi
 power. The mixture SPRT (Johari et al. 2017) allows looking after every user, at the cost of
 power at any fixed maximum sample. The simulations quantify that trade-off instead of asserting it.
 
-**Correctness checks** (79 tests, about 3 s): power and sample size vs `statsmodels.stats.power`
+**Correctness checks** (80 tests, about 3 s): power and sample size vs `statsmodels.stats.power`
 and `power_proportions_2indep`; z-test, Wald and log-ratio CIs vs statsmodels; Welch vs scipy
 and statsmodels; OBF boundaries vs the published 5-look table (4.877, 3.357, 2.680, 2.290,
 2.031); naive peeking vs Armitage, McPherson & Rowe (1969); the mSPRT likelihood ratio vs
@@ -72,6 +72,12 @@ posteriors; CUPED vs an ANCOVA regression; and CLI and pipeline smoke tests.
 
 All data in this section are **simulated**, because only simulation provides known ground truth:
 the true effect is fixed, so false-positive rates, coverage and power can be measured directly.
+
+Reproducibility: with fixed library versions `make run` is byte-for-byte deterministic. The
+committed numbers were produced with numpy 1.26 and scipy 1.13 (versions recorded in
+`metrics.json`). numpy 2.x draws binomial variates from a different random stream, so a fresh
+install reproduces every conclusion but not the last Monte Carlo digits; a check under numpy
+2.5 / scipy 1.18 differed only within Monte Carlo error.
 
 ### (a) Peeking vs valid sequential tests
 
@@ -221,7 +227,7 @@ git clone https://github.com/faiqrasulov/ab-testing-toolkit.git
 cd ab-testing-toolkit
 make install          # pip install -e ".[dev]"
 make run              # simulation studies -> reports/metrics.json + figures, then the CLI demo
-make test             # 79 tests, ~3 s
+make test             # 80 tests, ~3 s
 ```
 
 ```bash
@@ -254,7 +260,7 @@ src/abkit/
   report.py, cli.py  `abkit analyze` / `abkit sample-size`
 examples/          simulated example CSVs + the script that generates them
 reports/           metrics.json and figures written by `make run`
-tests/             79 pytest tests (references: statsmodels, scipy, published tables)
+tests/             80 pytest tests (references: statsmodels, scipy, published tables)
 ```
 
 ## Limitations & next steps
